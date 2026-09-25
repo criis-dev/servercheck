@@ -1,0 +1,8 @@
+package main
+
+import "fmt"
+
+func main() {
+    fmt.Println("ServerCheck v0.1.0")
+    fmt.Println("SSH server health checker")
+}
