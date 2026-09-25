@@ -1,0 +1,5 @@
+servers:
+  - name: servir-server2
+    host: servir-server2.servir-vpn
+    port: 22
+    user: administrator
