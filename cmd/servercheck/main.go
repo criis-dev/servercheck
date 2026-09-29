@@ -6,7 +6,7 @@ import (
 
 	"github.com/cristianperen/servercheck/internal/checks"
 	"github.com/cristianperen/servercheck/internal/config"
-	"github.com/cristianperen/servercheck/internal/models"
+	"github.com/cristianperen/servercheck/internal/output"
 )
 
 const version = "0.1.0"
@@ -60,53 +60,13 @@ func main() {
 		for _, server := range cfg.Servers {
 			fmt.Printf("Connecting to %s...\n", server.Name)
 
-			// start := time.Now()
-
-			// latency := time.Since(start)
-
 			result, err := checks.CheckServer(server)
 			if err != nil {
 				fmt.Printf("  Error: %v\n", err)
 				continue
 			}
 
-			if result.Status == models.StatusDown {
-				fmt.Printf("  SSH -> DOWN\n")
-				continue
-			}
-
-			for _, disk := range result.Disk {
-
-				fmt.Printf(
-					"  %s -> %d%% (%s) [%s]\n",
-					disk.MountPoint,
-					disk.UsagePercent,
-					disk.Filesystem,
-					disk.Status,
-				)
-			}
-
-			fmt.Println()
-			fmt.Println("Inodes: ")
-
-			for _, inode := range result.Inodes {
-				fmt.Printf(
-					"  %s -> %d%% (%s) [%s]\n",
-					inode.MountPoint,
-					inode.UsagePercent,
-					inode.Filesystem,
-					inode.Status,
-				)
-			}
-
-			fmt.Printf("  Server status %v\n", result.Status)
-
-			if err != nil {
-				fmt.Printf("  Command error: %v\n", err)
-				continue
-			}
-
-			// fmt.Println(output)
+			output.PrintServerResult(result)
 		}
 
 	default:
