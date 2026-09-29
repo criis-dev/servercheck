@@ -21,6 +21,7 @@ func showHelp() {
 	fmt.Println("Usage:")
 	fmt.Println("  servercheck version")
 	fmt.Println("  servercheck check")
+	fmt.Println("  servercheck check --verbose")
 }
 
 func checkServers() {
@@ -57,6 +58,10 @@ func main() {
 			return
 		}
 
+		verbose := len(os.Args) > 2 && os.Args[2] == "--verbose"
+
+		rows := make([]output.ServerRow, 0, len(cfg.Servers))
+
 		for _, server := range cfg.Servers {
 			fmt.Printf("Connecting to %s...\n", server.Name)
 
@@ -66,8 +71,15 @@ func main() {
 				continue
 			}
 
-			output.PrintServerResult(result)
+			rows = append(rows, output.BuildServerRow(result))
+
+			if verbose {
+				output.PrintDetailedResult(result)
+			}
 		}
+
+		fmt.Println()
+		output.PrintTable(rows)
 
 	default:
 		fmt.Printf("Unknown command: %s\n", command)

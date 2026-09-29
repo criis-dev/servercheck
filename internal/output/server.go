@@ -14,7 +14,7 @@ type ServerRow struct {
 	Status string
 }
 
-func buildServerRow(result models.ServerCheckResult) ServerRow {
+func BuildServerRow(result models.ServerCheckResult) ServerRow {
 	return ServerRow{
 		Name:   result.ServerName,
 		SSH:    formatSSH(result.SSH),
