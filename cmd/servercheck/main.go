@@ -21,6 +21,7 @@ func showHelp() {
 	fmt.Println("Usage:")
 	fmt.Println("  servercheck version")
 	fmt.Println("  servercheck check")
+	fmt.Println("  servercheck check --server <name>")
 	fmt.Println("  servercheck check --verbose")
 }
 
@@ -58,11 +59,35 @@ func main() {
 			return
 		}
 
-		verbose := len(os.Args) > 2 && os.Args[2] == "--verbose"
+		serverFilter := ""
+		verbose := false
+
+		for i := 2; i < len(os.Args); i++ {
+			switch os.Args[i] {
+			case "--verbose":
+				verbose = true
+
+			case "--server":
+				if i+1 >= len(os.Args) {
+					fmt.Println("Error: --server requires a server name")
+					return
+				}
+
+				serverFilter = os.Args[i+1]
+				i++
+			}
+		}
 
 		rows := make([]output.ServerRow, 0, len(cfg.Servers))
+		found := false
 
 		for _, server := range cfg.Servers {
+			if serverFilter != "" && server.Name != serverFilter {
+				continue
+			}
+
+			found = true
+
 			fmt.Printf("Connecting to %s...\n", server.Name)
 
 			result, err := checks.CheckServer(server)
@@ -76,6 +101,11 @@ func main() {
 			if verbose {
 				output.PrintDetailedResult(result)
 			}
+		}
+
+		if serverFilter != "" && !found {
+			fmt.Printf("Server not found: %s\n", serverFilter)
+			return
 		}
 
 		fmt.Println()
