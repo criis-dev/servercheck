@@ -51,25 +51,6 @@ func main() {
 		showVersion()
 
 	case "check":
-		// cfg, err := config.Load("configs/servers.yaml")
-		// if err != nil {
-		// 	fmt.Printf("Error loading configuration: %v\n", err)
-		// 	return
-		// }
-
-		// for _, server := range cfg.Servers {
-		// 	fmt.Printf("Connecting to %s...\n", server.Name)
-
-		// 	client, err := ssh.Connect(server)
-		// 	if err != nil {
-		// 		fmt.Printf("  SSH error: %v\n", err)
-		// 		continue
-		// 	}
-		// 	fmt.Printf("  SSH connetion OK")
-
-		// 	client.Close()
-		// }
-
 		cfg, err := config.Load("configs/servers.yaml")
 		if err != nil {
 			fmt.Printf("Error loading configuration: %v\n", err)
@@ -79,7 +60,12 @@ func main() {
 		for _, server := range cfg.Servers {
 			fmt.Printf("Connecting to %s...\n", server.Name)
 
+			// start := time.Now()
+
 			client, err := ssh.Connect(server)
+
+			// latency := time.Since(start)
+
 			if err != nil {
 				fmt.Printf("  SSH error: %v\n", err)
 				continue
@@ -95,11 +81,14 @@ func main() {
 			}
 
 			for _, result := range results {
+				status := checks.EvaluateDiskUsage(result.UsagePercent)
+
 				fmt.Printf(
-					"  %s -> %d%% (%s)\n",
+					"  %s -> %d%% (%s) [%s]\n",
 					result.MountPoint,
 					result.UsagePercent,
 					result.Filesystem,
+					status,
 				)
 			}
 
