@@ -7,6 +7,7 @@ type ServerCheckResult struct {
 	Status     Status
 	SSH        SSHResult
 	Disk       []DiskResult
+	Inodes     []InodeResult
 }
 
 type SSHResult struct {

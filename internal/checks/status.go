@@ -14,7 +14,10 @@ func EvaluateDiskUsage(usagePercent int) models.Status {
 	return models.StatusOK
 }
 
-func EvaluateServerStatus(diskResults []models.DiskResult) models.Status {
+func EvaluateServerStatus(
+	diskResults []models.DiskResult,
+	inodeResults []models.InodeResult,
+) models.Status {
 	status := models.StatusOK
 
 	for _, disk := range diskResults {
@@ -23,6 +26,16 @@ func EvaluateServerStatus(diskResults []models.DiskResult) models.Status {
 		}
 
 		if disk.Status == models.StatusWarning {
+			status = models.StatusWarning
+		}
+	}
+
+	for _, inode := range inodeResults {
+		if inode.Status == models.StatusCritical {
+			return models.StatusCritical
+		}
+
+		if inode.Status == models.StatusWarning {
 			status = models.StatusWarning
 		}
 	}

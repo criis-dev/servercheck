@@ -86,6 +86,19 @@ func main() {
 				)
 			}
 
+			fmt.Println()
+			fmt.Println("Inodes: ")
+
+			for _, inode := range result.Inodes {
+				fmt.Printf(
+					"  %s -> %d%% (%s) [%s]\n",
+					inode.MountPoint,
+					inode.UsagePercent,
+					inode.Filesystem,
+					inode.Status,
+				)
+			}
+
 			fmt.Printf("  Server status %v\n", result.Status)
 
 			if err != nil {

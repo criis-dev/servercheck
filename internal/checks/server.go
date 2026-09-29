@@ -26,7 +26,7 @@ func CheckServer(server models.Server) (models.ServerCheckResult, error) {
 
 	latency := time.Since(start)
 
-	output, err := ssh.RunCommand(client, "df -hl")
+	diskOutput, err := ssh.RunCommand(client, "df -hl")
 	if err != nil {
 		return models.ServerCheckResult{
 			ServerName: server.Name,
@@ -38,12 +38,22 @@ func CheckServer(server models.Server) (models.ServerCheckResult, error) {
 		}, nil
 	}
 
-	diskResults, err := ParseDiskOutput(output)
+	diskResults, err := ParseDiskOutput(diskOutput)
 	if err != nil {
 		return models.ServerCheckResult{}, err
 	}
 
-	status := EvaluateServerStatus(diskResults)
+	inodeOutput, err := ssh.RunCommand(client, "df -il")
+	if err != nil {
+		return models.ServerCheckResult{}, err
+	}
+
+	inodeResults, err := ParseInodeOutput(inodeOutput)
+	if err != nil {
+		return models.ServerCheckResult{}, err
+	}
+
+	status := EvaluateServerStatus(diskResults, inodeResults)
 
 	return models.ServerCheckResult{
 		ServerName: server.Name,
@@ -52,6 +62,7 @@ func CheckServer(server models.Server) (models.ServerCheckResult, error) {
 			Connected: true,
 			Latency:   latency,
 		},
-		Disk: diskResults,
+		Disk:   diskResults,
+		Inodes: inodeResults,
 	}, nil
 }
