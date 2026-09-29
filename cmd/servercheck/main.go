@@ -6,7 +6,7 @@ import (
 
 	"github.com/cristianperen/servercheck/internal/checks"
 	"github.com/cristianperen/servercheck/internal/config"
-	"github.com/cristianperen/servercheck/internal/ssh"
+	"github.com/cristianperen/servercheck/internal/models"
 )
 
 const version = "0.1.0"
@@ -62,35 +62,31 @@ func main() {
 
 			// start := time.Now()
 
-			client, err := ssh.Connect(server)
-
 			// latency := time.Since(start)
 
+			result, err := checks.CheckServer(server)
 			if err != nil {
-				fmt.Printf("  SSH error: %v\n", err)
+				fmt.Printf("  Error: %v\n", err)
 				continue
 			}
 
-			defer client.Close()
-
-			output, err := ssh.RunCommand(client, "df -hl")
-			results, err := checks.ParseDiskOutput(output)
-			if err != nil {
-				fmt.Printf("  Parse error: %v\n", err)
+			if result.Status == models.StatusDown {
+				fmt.Printf("  SSH -> DOWN\n")
 				continue
 			}
 
-			for _, result := range results {
-				status := checks.EvaluateDiskUsage(result.UsagePercent)
+			for _, disk := range result.Disk {
 
 				fmt.Printf(
 					"  %s -> %d%% (%s) [%s]\n",
-					result.MountPoint,
-					result.UsagePercent,
-					result.Filesystem,
-					status,
+					disk.MountPoint,
+					disk.UsagePercent,
+					disk.Filesystem,
+					disk.Status,
 				)
 			}
+
+			fmt.Printf("  Server status %v\n", result.Status)
 
 			if err != nil {
 				fmt.Printf("  Command error: %v\n", err)

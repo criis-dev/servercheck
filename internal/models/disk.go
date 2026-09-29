@@ -4,4 +4,5 @@ type DiskResult struct {
 	Filesystem   string
 	UsagePercent int
 	MountPoint   string
+	Status       Status
 }

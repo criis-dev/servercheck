@@ -40,6 +40,7 @@ func ParseDiskOutput(output string) ([]models.DiskResult, error) {
 			Filesystem:   filesystem,
 			UsagePercent: usagePercent,
 			MountPoint:   fields[5],
+			Status:       EvaluateDiskUsage(usagePercent),
 		})
 	}
 

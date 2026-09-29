@@ -4,6 +4,7 @@ import "time"
 
 type ServerCheckResult struct {
 	ServerName string
+	Status     Status
 	SSH        SSHResult
 	Disk       []DiskResult
 }

@@ -1,21 +1,31 @@
 package checks
 
-type Status string
+import "github.com/cristianperen/servercheck/internal/models"
 
-const (
-	StatusOK       Status = "OK"
-	StatusWarning  Status = "WARNING"
-	StatusCritical Status = "CRITICAL"
-)
-
-func EvaluateDiskUsage(usagePercent int) Status {
+func EvaluateDiskUsage(usagePercent int) models.Status {
 	if usagePercent > 90 {
-		return StatusCritical
+		return models.StatusCritical
 	}
 
 	if usagePercent >= 80 {
-		return StatusWarning
+		return models.StatusWarning
 	}
 
-	return StatusOK
+	return models.StatusOK
+}
+
+func EvaluateServerStatus(diskResults []models.DiskResult) models.Status {
+	status := models.StatusOK
+
+	for _, disk := range diskResults {
+		if disk.Status == models.StatusCritical {
+			return models.StatusCritical
+		}
+
+		if disk.Status == models.StatusWarning {
+			status = models.StatusWarning
+		}
+	}
+
+	return status
 }
