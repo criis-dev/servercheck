@@ -7,6 +7,8 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+const DefaultPath = "/etc/servercheck/servers.yaml"
+
 type Config struct {
 	Servers []models.Server `yaml:"servers"`
 }

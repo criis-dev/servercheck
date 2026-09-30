@@ -77,9 +77,15 @@ func runCheck(args []string) {
 		"show detailed check results",
 	)
 
+	configPath := checkFlags.String(
+		"config",
+		config.DefaultPath,
+		"path to the server configuration file",
+	)
+
 	checkFlags.Parse(args)
 
-	cfg, err := config.Load("configs/servers.yaml")
+	cfg, err := config.Load(*configPath)
 	if err != nil {
 		fmt.Printf("Error loading configuration: %v\n", err)
 		return
