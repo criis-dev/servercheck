@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 
@@ -53,66 +54,67 @@ func main() {
 		showVersion()
 
 	case "check":
-		cfg, err := config.Load("configs/servers.yaml")
-		if err != nil {
-			fmt.Printf("Error loading configuration: %v\n", err)
-			return
-		}
-
-		serverFilter := ""
-		verbose := false
-
-		for i := 2; i < len(os.Args); i++ {
-			switch os.Args[i] {
-			case "--verbose":
-				verbose = true
-
-			case "--server":
-				if i+1 >= len(os.Args) {
-					fmt.Println("Error: --server requires a server name")
-					return
-				}
-
-				serverFilter = os.Args[i+1]
-				i++
-			}
-		}
-
-		rows := make([]output.ServerRow, 0, len(cfg.Servers))
-		found := false
-
-		for _, server := range cfg.Servers {
-			if serverFilter != "" && server.Name != serverFilter {
-				continue
-			}
-
-			found = true
-
-			fmt.Printf("Connecting to %s...\n", server.Name)
-
-			result, err := checks.CheckServer(server)
-			if err != nil {
-				fmt.Printf("  Error: %v\n", err)
-				continue
-			}
-
-			rows = append(rows, output.BuildServerRow(result))
-
-			if verbose {
-				output.PrintDetailedResult(result)
-			}
-		}
-
-		if serverFilter != "" && !found {
-			fmt.Printf("Server not found: %s\n", serverFilter)
-			return
-		}
-
-		fmt.Println()
-		output.PrintTable(rows)
+		runCheck(os.Args[2:])
 
 	default:
 		fmt.Printf("Unknown command: %s\n", command)
 		showHelp()
 	}
+}
+
+func runCheck(args []string) {
+	checkFlags := flag.NewFlagSet("check", flag.ExitOnError)
+
+	server := checkFlags.String(
+		"server",
+		"",
+		"check only the specified server",
+	)
+
+	verbose := checkFlags.Bool(
+		"verbose",
+		false,
+		"show detailed check results",
+	)
+
+	checkFlags.Parse(args)
+
+	cfg, err := config.Load("configs/servers.yaml")
+	if err != nil {
+		fmt.Printf("Error loading configuration: %v\n", err)
+		return
+	}
+
+	rows := make([]output.ServerRow, 0, len(cfg.Servers))
+	found := false
+
+	for _, srv := range cfg.Servers {
+		if *server != "" && srv.Name != *server {
+			continue
+		}
+
+		found = true
+
+		fmt.Printf("Connecting to %s...\n", srv.Name)
+
+		result, err := checks.CheckServer(srv)
+		if err != nil {
+			fmt.Printf("  Error: %v\n", err)
+			continue
+		}
+
+		rows = append(rows, output.BuildServerRow(result))
+
+		if *verbose {
+			output.PrintDetailedResult(result)
+		}
+	}
+
+	if *server != "" && !found {
+		fmt.Printf("Server not found: %s\n", *server)
+		return
+	}
+
+	fmt.Println()
+	output.PrintTable(rows)
 }
